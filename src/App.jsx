@@ -58,7 +58,7 @@ function App() {
 
     const myItem = listItems.filter((item) => item.id === id);
     const updateOptions = {
-      method: 'PATCH',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
