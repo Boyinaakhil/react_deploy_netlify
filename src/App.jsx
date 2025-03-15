@@ -36,8 +36,8 @@ function App() {
   }, [])
 
   const addItem = async (item) => {
-    const id = items.length ? items[items.length - 1].id + 1 : 1;
-    const myNewItem = { id, checked: false, item };
+    // const id = items.length ? items[items.length - 1].id + 1 : 1;
+    const myNewItem = { checked: false, item };
     const listItems = [...items, myNewItem];
     setItems(listItems);
 
@@ -102,7 +102,7 @@ function App() {
         {isLoading && <p>Loading Items...</p>}
         {fetchError && <p style={{ color: "red" }}>{`Error: ${fetchError}`}</p>}
         {!fetchError && !isLoading && <Content
-          items = {(items || []).filter(item => item.name && item.name.toLowerCase().includes(search.toLowerCase()))}
+          items = {(items || []).filter(item => item.item && item.item.toLowerCase().includes(search.toLowerCase()))}
           handleCheck={handleCheck}
           handleDelete={handleDelete}
         />}
