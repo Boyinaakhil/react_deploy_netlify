@@ -48,8 +48,18 @@ function App() {
       },
       body: JSON.stringify(myNewItem)
     }
-    const result = await apiRequest(API_URL, postOptions);
-    if (result) setFetchError(result);
+      try {
+        const response = await fetch(API_URL, postOptions);
+        if (!response.ok) throw new Error("Failed to add item");
+
+        const result = await response.json();
+
+        // Use the item returned by the API to ensure correct id
+        setItems(prevItems => [...prevItems, result]);
+        setFetchError(null);
+    } catch (error) {
+        setFetchError(error.message);
+  }
   }
 
   const handleCheck = async (id) => {
