@@ -4,7 +4,6 @@ import AddItem from './AddItem';
 import Content from './Content';
 import Footer from './Footer';
 import { useState, useEffect } from 'react';
-import apiRequest from './apiRequest';
 
 function App() {
   const API_URL = 'https://67d528ded2c7857431ef8b0f.mockapi.io/items';
@@ -15,13 +14,14 @@ function App() {
   const [fetchError, setFetchError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // ✅ Fetch Items from API
   useEffect(() => {
-
     const fetchItems = async () => {
       try {
         const response = await fetch(API_URL);
         if (!response.ok) throw Error('Did not receive expected data');
         const listItems = await response.json();
+        console.log("Fetched items:", listItems);  // ✅ Debugging output
         setItems(listItems);
         setFetchError(null);
       } catch (err) {
@@ -29,72 +29,79 @@ function App() {
       } finally {
         setIsLoading(false);
       }
-    }
+    };
+    fetchItems();
+  }, []);
 
-    setTimeout(() => fetchItems(), 1000);
-
-  }, [])
-
+  // ✅ Add Item to API
   const addItem = async (item) => {
-    const id = items.length ? items[items.length - 1].id + 1 : 1;
-    const myNewItem = { id, checked: false, item };
-    const listItems = [...items, myNewItem];
-    setItems(listItems);
+    const myNewItem = { checked: false, item };  // API will auto-generate ID
 
     const postOptions = {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(myNewItem)
-    }
-      try {
-        const response = await fetch(API_URL, postOptions);
-        if (!response.ok) throw new Error("Failed to add item");
+    };
 
-        const result = await response.json();
+    try {
+      const response = await fetch(API_URL, postOptions);
+      if (!response.ok) throw new Error("Failed to add item");
 
-        // Use the item returned by the API to ensure correct id
-        setItems(prevItems => [...prevItems, result]);
-        setFetchError(null);
+      const result = await response.json();
+      console.log("Added item:", result);  // ✅ Debugging output
+
+      setItems(prevItems => [...prevItems, result]); // ✅ Ensure correct item addition
+      setFetchError(null);
     } catch (error) {
-        setFetchError(error.message);
-  }
-  }
+      setFetchError(error.message);
+    }
+  };
 
+  // ✅ Handle Checkbox Toggle
   const handleCheck = async (id) => {
-    const listItems = items.map((item) => item.id === id ? { ...item, checked: !item.checked } : item);
-    setItems(listItems);
+    const updatedItems = items.map(item =>
+      item.id === id ? { ...item, checked: !item.checked } : item
+    );
+    setItems(updatedItems);
 
-    const myItem = listItems.filter((item) => item.id === id);
+    const updatedItem = updatedItems.find(item => item.id === id);
+    
     const updateOptions = {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ checked: myItem[0].checked })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checked: updatedItem.checked })
     };
-    const reqUrl = `${API_URL}/${id}`;
-    const result = await apiRequest(reqUrl, updateOptions);
-    if (result) setFetchError(result);
-  }
 
+    try {
+      const response = await fetch(`${API_URL}/${id}`, updateOptions);
+      if (!response.ok) throw new Error("Failed to update item");
+    } catch (error) {
+      setFetchError(error.message);
+    }
+  };
+
+  // ✅ Handle Delete
   const handleDelete = async (id) => {
-    const listItems = items.filter((item) => item.id !== id);
-    setItems(listItems);
+    const updatedItems = items.filter(item => item.id !== id);
+    setItems(updatedItems);
 
     const deleteOptions = { method: 'DELETE' };
-    const reqUrl = `${API_URL}/${id}`;
-    const result = await apiRequest(reqUrl, deleteOptions);
-    if (result) setFetchError(result);
-  }
 
+    try {
+      const response = await fetch(`${API_URL}/${id}`, deleteOptions);
+      if (!response.ok) throw new Error("Failed to delete item");
+    } catch (error) {
+      setFetchError(error.message);
+    }
+  };
+
+  // ✅ Handle Submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!newItem) return;
+    if (!newItem.trim()) return;
     addItem(newItem);
     setNewItem('');
-  }
+  };
 
   return (
     <div className="App">
@@ -109,14 +116,15 @@ function App() {
         setSearch={setSearch}
       />
       <main>
-        
         {isLoading && <p>Loading Items...</p>}
         {fetchError && <p style={{ color: "red" }}>{`Error: ${fetchError}`}</p>}
-        {!fetchError && !isLoading && <Content
-          items = {(items || []).filter(item => item.name && item.name.toLowerCase().includes(search.toLowerCase()))}
-          handleCheck={handleCheck}
-          handleDelete={handleDelete}
-        />}
+        {!fetchError && !isLoading && (
+          <Content
+            items={items.filter(item => item.item && item.item.toLowerCase().includes(search.toLowerCase()))}
+            handleCheck={handleCheck}
+            handleDelete={handleDelete}
+          />
+        )}
       </main>
       <Footer length={items.length} />
     </div>
