@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import apiRequest from './apiRequest';
 
 function App() {
-  const API_URL = 'http://localhost:3500/items';
+  const API_URL = 'https://67d528ded2c7857431ef8b0f.mockapi.io/:items';
 
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState('');
