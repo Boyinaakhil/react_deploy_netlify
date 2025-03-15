@@ -33,14 +33,14 @@ function App() {
     fetchItems();
   }, []);
 
-  // ✅ Add Item to API
+  // ✅ Add Item (Fixed)
   const addItem = async (item) => {
-    const myNewItem = { checked: false, item };  // API will auto-generate ID
+    const newItemObj = { checked: false, item };  // Don't manually assign an ID
 
     const postOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(myNewItem)
+      body: JSON.stringify(newItemObj)
     };
 
     try {
@@ -50,14 +50,14 @@ function App() {
       const result = await response.json();
       console.log("Added item:", result);  // ✅ Debugging output
 
-      setItems(prevItems => [...prevItems, result]); // ✅ Ensure correct item addition
+      setItems(prevItems => [...prevItems, result]); // ✅ Use API-generated ID
       setFetchError(null);
     } catch (error) {
       setFetchError(error.message);
     }
   };
 
-  // ✅ Handle Checkbox Toggle
+  // ✅ Handle Checkbox Toggle (Fixed)
   const handleCheck = async (id) => {
     const updatedItems = items.map(item =>
       item.id === id ? { ...item, checked: !item.checked } : item
@@ -67,20 +67,20 @@ function App() {
     const updatedItem = updatedItems.find(item => item.id === id);
     
     const updateOptions = {
-      method: 'PUT',
+      method: 'PUT',  // ✅ MockAPI supports PUT, but some APIs require PATCH
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ checked: updatedItem.checked })
     };
 
     try {
       const response = await fetch(`${API_URL}/${id}`, updateOptions);
-      if (!response.ok) throw new Error("Failed to update item");
+      if (!response.ok) throw new Error(`Failed to update item with ID ${id}`);
     } catch (error) {
       setFetchError(error.message);
     }
   };
 
-  // ✅ Handle Delete
+  // ✅ Handle Delete (Fixed)
   const handleDelete = async (id) => {
     const updatedItems = items.filter(item => item.id !== id);
     setItems(updatedItems);
@@ -89,7 +89,7 @@ function App() {
 
     try {
       const response = await fetch(`${API_URL}/${id}`, deleteOptions);
-      if (!response.ok) throw new Error("Failed to delete item");
+      if (!response.ok) throw new Error(`Failed to delete item with ID ${id}`);
     } catch (error) {
       setFetchError(error.message);
     }
