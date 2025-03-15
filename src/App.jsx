@@ -99,10 +99,11 @@ function App() {
         setSearch={setSearch}
       />
       <main>
+        
         {isLoading && <p>Loading Items...</p>}
         {fetchError && <p style={{ color: "red" }}>{`Error: ${fetchError}`}</p>}
         {!fetchError && !isLoading && <Content
-          items={items.filter(item => ((item.item).toLowerCase()).includes(search.toLowerCase()))}
+          items = {(items || []).filter(item => item.name && item.name.toLowerCase().includes(search.toLowerCase()))}
           handleCheck={handleCheck}
           handleDelete={handleDelete}
         />}
