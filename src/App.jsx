@@ -14,28 +14,30 @@ function App() {
   const [fetchError, setFetchError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ Fetch Items from API
+  // Fetch Items from API
   useEffect(() => {
     const fetchItems = async () => {
       try {
         const response = await fetch(API_URL);
-        if (!response.ok) throw Error('Did not receive expected data');
+        if (!response.ok) throw new Error('Failed to fetch items');
+        
         const listItems = await response.json();
-        console.log("Fetched items:", listItems);  // ✅ Debugging output
+        console.log("Fetched items:", listItems); // ✅ Debug log
         setItems(listItems);
         setFetchError(null);
-      } catch (err) {
-        setFetchError(err.message);
+      } catch (error) {
+        setFetchError(error.message);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchItems();
+
+    setTimeout(() => fetchItems(), 1000);
   }, []);
 
-  // ✅ Add Item (Fixed)
+  // Add Item
   const addItem = async (item) => {
-    const newItemObj = { checked: false, item };  // Don't manually assign an ID
+    const newItemObj = { checked: false, item };
 
     const postOptions = {
       method: 'POST',
@@ -48,28 +50,27 @@ function App() {
       if (!response.ok) throw new Error("Failed to add item");
 
       const result = await response.json();
-      console.log("Added item:", result);  // ✅ Debugging output
-
-      setItems(prevItems => [...prevItems, result]); // ✅ Use API-generated ID
+      console.log("Added item:", result); // ✅ Debug log
+      setItems(prevItems => [...prevItems, result]);
       setFetchError(null);
     } catch (error) {
       setFetchError(error.message);
     }
   };
 
-  // ✅ Handle Checkbox Toggle (Fixed)
+  // Update Item (Check/Uncheck)
   const handleCheck = async (id) => {
+    console.log(`Updating item with ID: ${id}`); // ✅ Debug log
+
     const updatedItems = items.map(item =>
       item.id === id ? { ...item, checked: !item.checked } : item
     );
     setItems(updatedItems);
 
-    const updatedItem = updatedItems.find(item => item.id === id);
-    
     const updateOptions = {
-      method: 'PUT',  // ✅ MockAPI supports PUT, but some APIs require PATCH
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ checked: updatedItem.checked })
+      body: JSON.stringify({ checked: updatedItems.find(item => item.id === id).checked })
     };
 
     try {
@@ -80,25 +81,24 @@ function App() {
     }
   };
 
-  // ✅ Handle Delete (Fixed)
+  // Delete Item
   const handleDelete = async (id) => {
-    const updatedItems = items.filter(item => item.id !== id);
-    setItems(updatedItems);
+    console.log(`Deleting item with ID: ${id}`); // ✅ Debug log
 
-    const deleteOptions = { method: 'DELETE' };
+    setItems(items.filter(item => item.id !== id));
 
     try {
-      const response = await fetch(`${API_URL}/${id}`, deleteOptions);
+      const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error(`Failed to delete item with ID ${id}`);
     } catch (error) {
       setFetchError(error.message);
     }
   };
 
-  // ✅ Handle Submit
+  // Handle Form Submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!newItem.trim()) return;
+    if (!newItem) return;
     addItem(newItem);
     setNewItem('');
   };
@@ -106,15 +106,8 @@ function App() {
   return (
     <div className="App">
       <Header title="Grocery List" />
-      <AddItem
-        newItem={newItem}
-        setNewItem={setNewItem}
-        handleSubmit={handleSubmit}
-      />
-      <SearchItem
-        search={search}
-        setSearch={setSearch}
-      />
+      <AddItem newItem={newItem} setNewItem={setNewItem} handleSubmit={handleSubmit} />
+      <SearchItem search={search} setSearch={setSearch} />
       <main>
         {isLoading && <p>Loading Items...</p>}
         {fetchError && <p style={{ color: "red" }}>{`Error: ${fetchError}`}</p>}
