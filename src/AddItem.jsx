@@ -21,7 +21,7 @@ const AddItem = ({ newItem, setNewItem, handleSubmit }) => {
                 aria-label='Add Item'
                 onClick={() => inputRef.current.focus()}
             >
-                delete
+                ENTER
             </button>
         </form>
     )
